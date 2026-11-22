@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#141419">
+<meta name="description" content="Edite fotos de academia, ajuste luz e cor e retoque a pele com o Forma Studio.">
+<title>Forma Studio — Editor de fotos</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27%23ff4d64%27/%3E%3Cpath d=%27M10 24V8h13v4h-9v3h7v4h-7v5z%27 fill=%27%2318171b%27/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+<script src="editor.js" defer></script>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><div class="emblem" data-icon="aperture"></div><div><span class="brand-name">FORMA<span>STUDIO</span></span><small>EDITOR DE FOTOS</small></div></div>
+  <div class="top-file"><span data-icon="image"></span><span id="filename">Treino em foco.jpg</span></div>
+  <div class="top-actions">
+    <div class="history"><button id="undo" class="icon-button" type="button" title="Desfazer (Ctrl+Z)" aria-label="Desfazer" data-icon="undo"></button><button id="redo" class="icon-button" type="button" title="Refazer (Ctrl+Shift+Z)" aria-label="Refazer" data-icon="redo"></button></div>
+    <button id="open" class="button secondary" type="button" aria-label="Abrir foto"><i data-icon="upload"></i><span>Abrir foto</span></button>
+    <button id="export" class="button primary" type="button"><i data-icon="download"></i><span>Exportar</span></button>
+    <input type="file" id="file" accept="image/*" hidden>
+  </div>
+</header>
+<main class="app">
+  <nav class="rail" aria-label="Ferramentas de edição">
+    <button class="tool selected" type="button" data-section="gym" aria-pressed="true"><i data-icon="dumbbell"></i><span>Academia</span></button>
+    <button class="tool" type="button" data-section="adjust" aria-pressed="false"><i data-icon="sliders"></i><span>Ajustes</span></button>
+    <button class="tool" type="button" data-section="retouch" aria-pressed="false"><i data-icon="sparkles"></i><span>Retoque</span></button>
+    <button class="tool" type="button" data-section="effects" aria-pressed="false"><i data-icon="effects"></i><span>Efeitos</span></button>
+    <button class="tool" type="button" data-section="crop" aria-pressed="false"><i data-icon="crop"></i><span>Corte</span></button>
+    <button class="tool" type="button" data-section="text" aria-pressed="false"><i data-icon="text"></i><span>Texto</span></button>
+  </nav>
+  <section class="workspace" aria-labelledby="workspace-title">
+    <div class="workspace-head">
+      <div><h1 id="workspace-title">Estúdio de edição</h1><div class="document-meta"><span class="live-dot"></span><span id="document-meta">Foto de demonstração</span></div></div>
+      <button class="button secondary compare-button" id="compare" aria-pressed="true" type="button"><i data-icon="compare"></i> Antes e depois</button>
+    </div>
+    <div id="stage" class="stage">
+      <div id="scroller" class="stage-scroll">
+        <div id="photo" class="photo">
+          <canvas id="edited" aria-label="Foto editada"></canvas>
+          <canvas id="original" aria-label="Foto original"></canvas>
+          <span class="compare-label before">ORIGINAL</span><span class="compare-label after">EDITADA</span>
+          <div id="splitLine" class="split-line" aria-hidden="true"><span data-icon="arrows"></span></div>
+          <input id="split" class="split-input" type="range" min="0" max="100" value="48" aria-label="Posição da divisão antes e depois">
+          <div id="cropGuide" class="crop-guide" hidden></div>
+        </div>
+      </div>
+      <div class="stage-footer"><span id="dimensions"></span><div class="zoom"><button class="icon-button" id="zoomOut" aria-label="Diminuir zoom" type="button" data-icon="minus"></button><button id="zoomReset" type="button" title="Ajustar à tela">100%</button><button class="icon-button" id="zoomIn" aria-label="Aumentar zoom" type="button" data-icon="plus"></button></div><button id="fit" class="icon-button" type="button" aria-label="Ajustar à tela" title="Ajustar à tela" data-icon="maximize"></button></div>
+      <div class="drop-message" hidden><i data-icon="upload"></i> Solte a foto para abrir</div>
+    </div>
+    <section class="looks" aria-labelledby="looks-title">
+      <div class="looks-heading"><h2 id="looks-title">Filtros rápidos</h2><button id="allEffects" type="button">Ver efeitos <i data-icon="chevron"></i></button></div>
+      <div id="looks" class="look-list"></div>
+    </section>
+  </section>
+  <aside class="inspector" aria-label="Configurações da ferramenta">
+    <div class="panel-heading"><div class="panel-icon" id="panelIcon"></div><div><h2 id="panelTitle">Modo Academia</h2><p id="panelDescription">Ajustes para fotos de treino</p></div></div>
+    <div class="panel-body" id="panel"></div>
+    <div class="panel-footer"><button class="button secondary reset" id="reset" type="button"><i data-icon="reset"></i> Restaurar ajustes</button><p><i data-icon="lock"></i> Suas fotos ficam no seu dispositivo</p></div>
+  </aside>
+</main>
+<dialog id="exportDialog">
+  <form id="exportForm" method="dialog">
+    <div class="dialog-heading"><h2>Exportar foto</h2><button id="closeExport" class="icon-button" aria-label="Fechar" type="button" data-icon="close"></button></div>
+    <label>Nome do arquivo<input type="text" maxlength="100" id="exportName" required></label>
+    <label>Formato<select id="format"><option value="image/jpeg">JPG</option><option value="image/png">PNG</option><option value="image/webp">WebP</option></select></label>
+    <label id="qualityRow">Qualidade <output id="qualityValue">92%</output><input type="range" id="quality" min="35" max="100" value="92"></label>
+    <label>Tamanho máximo<select id="size"><option value="0">Resolução da foto (até 24 MP)</option><option value="2160">2160 px</option><option value="1080">1080 px</option><option value="720">720 px</option></select></label>
+    <button id="download" class="button primary" type="submit"><i data-icon="download"></i> Baixar foto</button>
+  </form>
+</dialog>
+<div class="toast" id="toast" role="status" hidden></div>
+</body>
+</html>
