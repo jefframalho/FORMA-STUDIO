@@ -4,7 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#141419">
-<meta name="description" content="Edite fotos de academia, ajuste luz e cor e retoque a pele com o Forma Studio.">
+<meta name="description" content="Edite fotos de academia no navegador: ajuste luz e cor, retoque a pele, aplique 20 filtros no estilo de redes sociais, desfoque, sépia, moldura e exporte em JPG, PNG ou WebP.">
+<meta name="color-scheme" content="dark">
+<meta name="referrer" content="no-referrer">
 <title>Forma Studio — Editor de fotos</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27%23ff4d64%27/%3E%3Cpath d=%27M10 24V8h13v4h-9v3h7v4h-7v5z%27 fill=%27%2318171b%27/%3E%3C/svg%3E">
 <link rel="stylesheet" href="style.css">
@@ -26,6 +28,7 @@
     <button class="tool selected" type="button" data-section="gym" aria-pressed="true"><i data-icon="dumbbell"></i><span>Academia</span></button>
     <button class="tool" type="button" data-section="adjust" aria-pressed="false"><i data-icon="sliders"></i><span>Ajustes</span></button>
     <button class="tool" type="button" data-section="retouch" aria-pressed="false"><i data-icon="sparkles"></i><span>Retoque</span></button>
+    <button class="tool" type="button" data-section="color" aria-pressed="false"><i data-icon="palette"></i><span>Cor</span></button>
     <button class="tool" type="button" data-section="effects" aria-pressed="false"><i data-icon="effects"></i><span>Efeitos</span></button>
     <button class="tool" type="button" data-section="crop" aria-pressed="false"><i data-icon="crop"></i><span>Corte</span></button>
     <button class="tool" type="button" data-section="text" aria-pressed="false"><i data-icon="text"></i><span>Texto</span></button>
@@ -57,7 +60,7 @@
   <aside class="inspector" aria-label="Configurações da ferramenta">
     <div class="panel-heading"><div class="panel-icon" id="panelIcon"></div><div><h2 id="panelTitle">Modo Academia</h2><p id="panelDescription">Ajustes para fotos de treino</p></div></div>
     <div class="panel-body" id="panel"></div>
-    <div class="panel-footer"><button class="button secondary reset" id="reset" type="button"><i data-icon="reset"></i> Restaurar ajustes</button><p><i data-icon="lock"></i> Suas fotos ficam no seu dispositivo</p></div>
+    <div class="panel-footer"><button class="button secondary reset" id="reset" type="button"><i data-icon="reset"></i> Restaurar ajustes</button><p><i data-icon="lock"></i> Suas fotos ficam no seu dispositivo</p><p class="shortcut-hint">Atalhos: teclas 1 a 7 trocam de seção · Ctrl+Z desfaz</p></div>
   </aside>
 </main>
 <dialog id="exportDialog">

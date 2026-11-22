@@ -28,6 +28,7 @@ const iconPaths = {
   reset:'<path d="M4 10a8 8 0 1 1 1 7m-1-7V4m0 6h6"/>',
   rotate:'<path d="M4 10a8 8 0 1 1 1 7m-1-7V4m0 6h6"/><rect x="9" y="10" width="6" height="6" rx="1"/>',
   flip:'<path d="M12 3v18M8 6l-5 12h5zm8 0 5 12h-5z"/>',
+  palette:'<path d="M12 3a9 9 0 0 0 0 18c1.1 0 1.6-.8 1.6-1.6 0-.4-.2-.8-.4-1.1-.2-.3-.4-.6-.4-1 0-.9.7-1.6 1.6-1.6H17a4 4 0 0 0 4-4c0-4.4-4-7.7-9-7.7Z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7.5" r="1"/><circle cx="15" cy="7.5" r="1"/>',
 };
 function icon(name) {
   return '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round">' + iconPaths[name] + '</svg>';
@@ -37,32 +38,50 @@ document.querySelectorAll('[data-icon]').forEach((el) => { el.innerHTML = icon(e
 const sections = {
   gym:['dumbbell','Modo Academia','Ajustes para fotos de treino'],
   adjust:['sliders','Ajustes','Controle a luz, a cor e os detalhes'],
-  retouch:['sparkles','Retoque','Pele, textura e redução de ruído'],
-  effects:['effects','Efeitos visuais','Escolha um filtro e dose a intensidade'],
+  retouch:['sparkles','Retoque','Pele, textura, ruído e desfoque'],
+  color:['palette','Cor','Matiz, vibração, sépia e posterização'],
+  effects:['effects','Efeitos visuais','Escolha um filtro, dose a intensidade e adicione moldura'],
   crop:['crop','Corte e rotação','Ajuste o enquadramento e o horizonte'],
   text:['text','Texto na foto','Adicione uma frase ou assinatura'],
 };
+const sectionOrder = ['gym','adjust','retouch','color','effects','crop','text'];
 const presets = {
   none:{label:'Original', values:{}},
   focus:{label:'Definição', values:{brightness:12,contrast:17,shadows:16,highlights:-9,clarity:32,sharpness:20,warmth:5,vignette:18}},
   dark:{label:'Gym Dark', values:{brightness:-9,contrast:33,shadows:-16,highlights:-12,clarity:24,saturation:-22,vignette:42}},
   warm:{label:'Golden Hour', values:{brightness:7,contrast:11,shadows:12,warmth:35,saturation:12,fade:15,vignette:12}},
   mono:{label:'Preto e branco', short:'P&B', values:{saturation:-100,contrast:24,clarity:23,sharpness:12,vignette:25}},
+  noir:{label:'Noir intenso', values:{saturation:-100,contrast:42,shadows:-14,highlights:8,clarity:18,grain:14,vignette:30}},
   cinema:{label:'Cinemático', values:{brightness:-2,contrast:16,warmth:12,tint:-17,saturation:-19,fade:22,vignette:25,grain:8}},
+  drama:{label:'Drama', values:{contrast:38,clarity:45,shadows:-18,highlights:-20,saturation:-12,vignette:45}},
   clean:{label:'Natural', values:{brightness:8,shadows:12,highlights:-10,saturation:7,clarity:9,sharpness:6}},
+  pastel:{label:'Pastel', values:{brightness:14,contrast:-16,fade:30,saturation:-18,highlights:8,warmth:6}},
+  vivid:{label:'Vívido', values:{vibrance:45,saturation:14,contrast:12,clarity:15,brightness:3}},
   cool:{label:'Luz fria', values:{brightness:6,contrast:17,warmth:-30,shadows:10,saturation:-10,clarity:13,tint:10}},
+  tealOrange:{label:'Teal & laranja', short:'Teal', values:{warmth:18,tint:-8,contrast:14,shadows:-10,highlights:6,saturation:10}},
+  vintage:{label:'Vintage', values:{sepia:45,contrast:-8,brightness:4,saturation:-25,fade:28,vignette:35,warmth:14,grain:12}},
+  glow:{label:'Glow suave', values:{glow:35,brightness:6,contrast:-6,highlights:10,warmth:8,fade:6}},
+  rosa:{label:'Rosa pastel', values:{tint:14,warmth:10,brightness:10,contrast:-10,saturation:-8,fade:14,highlights:8}},
+  neon:{label:'Neon pop', values:{vibrance:55,saturation:22,contrast:20,clarity:18,glow:18,brightness:4}},
+  retro:{label:'Filme retrô', values:{sepia:22,fade:30,grain:22,contrast:-6,warmth:12,vignette:28,saturation:-12}},
+  noite:{label:'Azul noite', values:{warmth:-28,tint:-10,brightness:-6,contrast:22,saturation:-8,shadows:12,vignette:30}},
+  matte:{label:'Matte', values:{fade:34,contrast:-18,clarity:6,saturation:-6}},
+  verao:{label:'Verão', values:{vibrance:30,warmth:22,brightness:8,saturation:12,highlights:8,glow:12}},
 };
 const fields = {
   brightness:['Brilho',-100,100], exposure:['Exposição',-100,100], contrast:['Contraste',-100,100],
   highlights:['Realces',-100,100], shadows:['Sombras',-100,100], saturation:['Saturação',-100,100],
-  warmth:['Temperatura',-100,100], tint:['Matiz verde / magenta',-100,100], clarity:['Definição',-60,100],
-  sharpness:['Nitidez',0,100], smooth:['Suavizar pele',0,100], denoise:['Redução de ruído',0,100], skinLight:['Iluminar pele',-60,100],
+  vibrance:['Vibração',-100,100], hue:['Matiz (giro de cor)',-100,100], warmth:['Temperatura',-100,100], tint:['Matiz verde / magenta',-100,100],
+  sepia:['Sépia',0,100], posterize:['Posterizar',0,100],
+  clarity:['Definição',-60,100], sharpness:['Nitidez',0,100], smooth:['Suavizar pele',0,100], denoise:['Redução de ruído',0,100], skinLight:['Iluminar pele',-60,100],
+  blur:['Desfoque suave',0,100], glow:['Brilho suave (glow)',0,100],
   vignette:['Vinheta',0,100], fade:['Efeito fosco',0,100], grain:['Grão',0,100], intensity:['Intensidade do filtro',0,100],
+  frame:['Espessura da moldura',0,100],
   cropScale:['Área do corte',25,100,'%'], cropX:['Posição horizontal',0,100,'%'], cropY:['Posição vertical',0,100,'%'], straighten:['Endireitar',-45,45,'°'],
   textSize:['Tamanho do texto',2,18,'%'], textOpacity:['Opacidade',10,100,'%'],
 };
 const defaults = Object.fromEntries(Object.keys(fields).map((key) => [key, 0]));
-Object.assign(defaults, {preset:'none',intensity:100,ratio:'original',cropScale:100,cropX:50,cropY:50,rotation:0,flipX:false,flipY:false,text:'',textSize:6,textColor:'#ffffff',textOpacity:100,textPosition:'bottom'});
+Object.assign(defaults, {preset:'none',intensity:100,ratio:'original',cropScale:100,cropX:50,cropY:50,rotation:0,flipX:false,flipY:false,text:'',textSize:6,textColor:'#ffffff',textOpacity:100,textPosition:'bottom',frameColor:'#ffffff'});
 let state = {...defaults, preset:'focus', smooth:14};
 let history = [state];
 let historyIndex = 0;
@@ -155,10 +174,13 @@ function renderPanel() {
     adjust:() => action('auto','Melhorar automaticamente','sparkles','auto') +
       group('Luz','exposure','brightness','contrast','highlights','shadows') +
       group('Cor','saturation','warmth','tint') + group('Detalhes','clarity','sharpness'),
-    retouch:() => group('Pele','smooth','skinLight') + group('Textura','denoise','sharpness'),
+    retouch:() => group('Pele','smooth','skinLight') + group('Textura','denoise','sharpness') + group('Profundidade','blur'),
+    color:() => group('Matiz e cor','hue','vibrance','saturation','warmth','tint') + group('Estilo','sepia','posterize'),
     effects:() => '<section class="group"><h3>Filtros</h3><div class="preset-grid">' +
       Object.entries(presets).map(([key, look]) => '<button type="button" class="button secondary" data-preset="' + key + '">' + look.label + '</button>').join('') +
-      '</div></section>' + group('Acabamento','intensity','vignette','fade','grain'),
+      '</div></section>' + group('Acabamento','intensity','glow','vignette','fade','grain') +
+      '<section class="group"><h3>Moldura</h3>' + slider('frame') +
+      '<label class="field">Cor da moldura<input type="color" data-field="frameColor" id="f-frameColor"></label></section>',
     crop:() => '<section class="group">' +
       options('ratio','Proporção', {original:'Original','1:1':'1:1 · Quadrado','4:5':'4:5 · Feed vertical','9:16':'9:16 · Stories e Reels','16:9':'16:9 · Paisagem','3:2':'3:2 · Fotografia'}) +
       '<div class="buttons-grid">' + action('rotateLeft','−90°','rotate') + action('rotateRight','+90°','rotate') + action('flipH','Espelhar','flip') + action('flipV','Virar vertical','flip') + '</div></section>' +
@@ -171,6 +193,7 @@ function renderPanel() {
     $('f-text').value = state.text;
     $('f-textColor').value = state.textColor;
   }
+  if ($('f-frameColor')) $('f-frameColor').value = state.frameColor;
   panel.querySelectorAll('input[type=range]').forEach(fillRange);
 }
 
@@ -254,8 +277,40 @@ function drawBase(target, settings, maxEdge) {
   return ctx.getImageData(0,0,target.width,target.height);
 }
 
+function boxBlur(pixels, width, height, radius) {
+  const tmp = new Uint8ClampedArray(pixels.length);
+  const out = new Uint8ClampedArray(pixels.length);
+  const span = radius*2+1;
+  const clampX = (x) => Math.min(width-1,Math.max(0,x));
+  const clampY = (y) => Math.min(height-1,Math.max(0,y));
+  for (let y = 0; y < height; y++) {
+    const row = y*width*4;
+    for (let c = 0; c < 3; c++) {
+      let sum = 0;
+      for (let x = -radius; x <= radius; x++) sum += pixels[row+clampX(x)*4+c];
+      for (let x = 0; x < width; x++) {
+        tmp[row+x*4+c] = sum/span;
+        sum += pixels[row+clampX(x+radius+1)*4+c] - pixels[row+clampX(x-radius)*4+c];
+      }
+    }
+    for (let x = 0; x < width; x++) tmp[row+x*4+3] = pixels[row+x*4+3];
+  }
+  for (let x = 0; x < width; x++) {
+    for (let c = 0; c < 3; c++) {
+      let sum = 0;
+      for (let y = -radius; y <= radius; y++) sum += tmp[clampY(y)*width*4+x*4+c];
+      for (let y = 0; y < height; y++) {
+        out[y*width*4+x*4+c] = sum/span;
+        sum += tmp[clampY(y+radius+1)*width*4+x*4+c] - tmp[clampY(y-radius)*width*4+x*4+c];
+      }
+    }
+    for (let y = 0; y < height; y++) out[y*width*4+x*4+3] = tmp[y*width*4+x*4+3];
+  }
+  return out;
+}
 function renderEdit(target, base, settings) {
-  const {width,height,data} = base;
+  const {width,height} = base;
+  const pixels = base.data;
   const preset = presets[settings.preset].values;
   const intensity = settings.intensity / 100;
   const value = (name) => clamp(settings[name] + (preset[name] || 0) * intensity,-100,100) / 100;
@@ -275,6 +330,21 @@ function renderEdit(target, base, settings) {
   const vignette = value('vignette') * .79;
   const fade = value('fade') * .25;
   const grain = value('grain') * 46;
+  const vibrance = value('vibrance') * .9;
+  const hueAngle = value('hue') * Math.PI;
+  const hc = Math.cos(hueAngle), hs = Math.sin(hueAngle);
+  const hm = [
+    .213+hc*.787-hs*.213, .715-hc*.715-hs*.715, .072-hc*.072+hs*.928,
+    .213-hc*.213+hs*.143, .715+hc*.285+hs*.140, .072-hc*.072-hs*.283,
+    .213-hc*.213-hs*.787, .715-hc*.715+hs*.715, .072+hc*.928+hs*.072,
+  ];
+  const sepiaAmount = Math.max(0,value('sepia'));
+  const posterLevels = value('posterize') > 0 ? Math.round(16 - value('posterize')*14) : 0;
+  const blurRadius = Math.round(Math.max(0,value('blur'))*10);
+  const frameWidth = Math.round(Math.min(width,height)*.06*Math.max(0,value('frame')));
+  const data = blurRadius ? boxBlur(pixels,width,height,blurRadius) : pixels;
+  const glowAmount = Math.max(0,value('glow'));
+  const glowData = glowAmount ? boxBlur(pixels,width,height,12) : null;
   const local = clarity || sharpness || smooth || denoise;
   const skin = smooth || skinLight;
   const d = Math.max(1, Math.round(Math.max(width,height)/450));
@@ -317,6 +387,36 @@ function renderEdit(target, base, settings) {
       r = lum+(r-lum)*saturation+tone+warmth*.74+tint*.5;
       g = lum+(g-lum)*saturation+tone+warmth*.11-tint*.58;
       b = lum+(b-lum)*saturation+tone-warmth+tint*.39;
+      if (hueAngle) {
+        const nr = r*hm[0]+g*hm[1]+b*hm[2];
+        const ng = r*hm[3]+g*hm[4]+b*hm[5];
+        const nb = r*hm[6]+g*hm[7]+b*hm[8];
+        r = nr; g = ng; b = nb;
+      }
+      if (vibrance) {
+        const chroma = (Math.max(r,g,b)-Math.min(r,g,b))/255;
+        const k = 1+vibrance*(1-clamp(chroma,0,1));
+        const ll = .2126*r+.7152*g+.0722*b;
+        r = ll+(r-ll)*k; g = ll+(g-ll)*k; b = ll+(b-ll)*k;
+      }
+      if (sepiaAmount) {
+        const sr = .393*r+.769*g+.189*b;
+        const sg = .349*r+.686*g+.168*b;
+        const sb = .272*r+.534*g+.131*b;
+        r = r+(sr-r)*sepiaAmount; g = g+(sg-g)*sepiaAmount; b = b+(sb-b)*sepiaAmount;
+      }
+      if (posterLevels) {
+        const step = 255/(posterLevels-1);
+        r = Math.round(clamp(r,0,255)/step)*step;
+        g = Math.round(clamp(g,0,255)/step)*step;
+        b = Math.round(clamp(b,0,255)/step)*step;
+      }
+      if (glowData) {
+        const gr = glowData[i]/255*glowAmount, gg = glowData[i+1]/255*glowAmount, gb = glowData[i+2]/255*glowAmount;
+        r = (1-(1-clamp(r,0,255)/255)*(1-gr))*255;
+        g = (1-(1-clamp(g,0,255)/255)*(1-gg))*255;
+        b = (1-(1-clamp(b,0,255)/255)*(1-gb))*255;
+      }
       let shade = 1;
       if (vignette) {
         const dx = x / Math.max(1,width-1) * 2 - 1;
@@ -330,6 +430,13 @@ function renderEdit(target, base, settings) {
     }
   }
   ctx.putImageData(output,0,0);
+  if (frameWidth > 0) {
+    ctx.save();
+    ctx.strokeStyle = settings.frameColor;
+    ctx.lineWidth = frameWidth*2;
+    ctx.strokeRect(0,0,width,height);
+    ctx.restore();
+  }
   const text = settings.text.trim();
   if (text) {
     const em = Math.max(8,Math.round(Math.min(width,height) * settings.textSize / 100));
@@ -492,6 +599,11 @@ $('reset').addEventListener('click', () => {
 });
 document.addEventListener('keydown', (event) => {
   if (event.target.closest('input, select, textarea, dialog')) return;
+  if (!event.ctrlKey && !event.metaKey && !event.altKey && /^[1-7]$/.test(event.key)) {
+    const next = sectionOrder[Number(event.key) - 1];
+    if (next) selectSection(next);
+    return;
+  }
   if (!(event.ctrlKey || event.metaKey) || event.altKey) return;
   const key = event.key.toLowerCase();
   if (key === 'z' || key === 'y') {
