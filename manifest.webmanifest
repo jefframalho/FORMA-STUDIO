@@ -1,0 +1,17 @@
+{
+  "name": "Forma Studio — Editor de fotos",
+  "short_name": "Forma Studio",
+  "description": "Edite fotos de academia e redes sociais direto no celular ou computador.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#151519",
+  "theme_color": "#141419",
+  "lang": "pt-BR",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

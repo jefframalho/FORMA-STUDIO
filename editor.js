@@ -728,3 +728,34 @@ renderLooks();
 updateHistory();
 fillRange($('quality'));
 loadImage('treino.jpg',filename,true);
+
+// Instalação como app (PWA): Chrome/Edge/Android usam o evento nativo; iPhone usa instruções.
+const installButton = $('installApp');
+const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+let deferredInstall = null;
+if (!isStandalone()) installButton.hidden = false;
+window.addEventListener('beforeinstallprompt', (event) => {
+  event.preventDefault();
+  deferredInstall = event;
+  installButton.hidden = false;
+});
+window.addEventListener('appinstalled', () => {
+  deferredInstall = null;
+  installButton.hidden = true;
+  notify('App instalado! Você pode abri-lo da tela inicial.');
+});
+installButton.addEventListener('click', async () => {
+  if (deferredInstall) {
+    deferredInstall.prompt();
+    await deferredInstall.userChoice;
+    deferredInstall = null;
+    return;
+  }
+  const iOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  notify(iOS
+    ? 'No iPhone: toque em Compartilhar e depois em "Adicionar à Tela de Início".'
+    : 'No menu do navegador, escolha "Instalar app" ou "Adicionar à tela inicial".');
+});
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
